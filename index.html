@@ -1,6 +1,10 @@
 <input id="query" name="query">
 
-<div id="results"></div>
+<div id="results">
+    <div class="warn">
+        Type something to start looking for icons!
+    </div>
+</div>
 
 
 <style>
@@ -11,6 +15,21 @@
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
+        outline: none;
+        box-shadow: none;
+        border: 1px solid #000000;
+    }
+
+    div.warn {
+        text-align: center;
+        font-size: 6em;
+        color: #444;
+        font-family: sans-serif;
+        font-weight: bold;
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
     }
 
     div#results {
@@ -26,15 +45,51 @@
         flex-grow: 1;
         text-align: center;
         cursor: copy;
+        display: flex;
+        flex-flow: column;
+    }
+
+    div.icon {
+        font-size: 64px;
+        font-family: 'Material Design Icons';
+        color: #000000;
+    }
+
+    div.label {
+        font-size: 14px;
+        font-family: monospace;
+        color: #444444; 
+    }
+
+    @media screen and (prefers-color-scheme: dark) {
+        input {
+            background-color: #222222;
+            color: #eeeeee;
+            border: 1px solid #eeeeee;
+        }
+
+        body {
+            background-color: #000000;
+        }
+
+        div.icon {
+            color: #dddddd;
+        }
+
+        div.label {
+            color: #aaaaaa;
+        }
     }
 </style>
 
 <script src="icons.js"></script>
 <script>
-    const iconNames = Object.keys(mdiIcons);
+    const MAX_ICONS = 200
+
+    const iconNames = Object.keys(mdiIcons)
     function buildNodesFromResults(results) {
         return results.map((result) => {
-            let container = document.createElement('div');
+            let container = document.createElement('div')
             container.classList = 'result'
             container.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -43,15 +98,13 @@
                 navigator.clipboard.writeText(result.icon);
             })
             let iconContainer = document.createElement('div')
-            iconContainer.style.fontSize = '64px';
-            iconContainer.style.fontFamily = 'Material Design Icons';
+            iconContainer.classList = 'icon';
             iconContainer.innerText = result['icon']
             let labelContainer = document.createElement('div')
-            labelContainer.style.fontSize = '14px';
-            labelContainer.style.fontFamily = 'Cascadia Code';
+            labelContainer.classList = 'label'
             labelContainer.innerText = result['label']
             container.appendChild(iconContainer)
-            container.appendChild(labelContainer);
+            container.appendChild(labelContainer)
             return container;
         })
     }
@@ -59,8 +112,8 @@
     function search(query) {
         query = query.trim().replace(/ /g, '-');
         // TODO: add sorting
-        let nameResults = iconNames.filter((val) => val.indexOf(query) !== -1);
-        if (nameResults.length > 150) nameResults = nameResults.slice(0, 150)
+        let nameResults = iconNames.filter((val) => val.indexOf(query) !== -1)
+        if (nameResults.length > MAX_ICONS) nameResults = nameResults.slice(0, MAX_ICONS)
         nameResults.sort((a,b) => {
             return a.indexOf(query)
         })
@@ -73,8 +126,18 @@
         let results = search(input.value);
         let nodes = buildNodesFromResults(results);
         while (resultsContainer.firstChild) resultsContainer.removeChild(resultsContainer.firstChild)
-        resultsContainer.append(...nodes);
+        if (nodes.length === 0) {
+            let notFound = document.createElement('div')
+            notFound.classList = 'warn';
+            notFound.innerText = 'No icons matching your query have been found'
+            resultsContainer.append(notFound)
+        } else {
+            resultsContainer.append(...nodes)
+        }
+    })
 
+    window.addEventListener('keydown', (e) => {
+        input.focus();
     })
 
 </script>

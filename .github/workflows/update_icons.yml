@@ -1,4 +1,6 @@
-on: workflow_dispatch
+on:
+    schedule:
+        - cron: "0 0 * * 0"
 
 jobs:
     update_icons:
